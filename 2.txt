@@ -1,0 +1,88 @@
+Gym pass
+
+RFs (Requisitos funcionais)
+
+[] Deve ser possível cadastrar um pet
+[] Deve ser possível listar todos os pets disponíveis para adoção em uma cidade
+[] Deve ser possível filtrar pets por suas características
+[] Deve ser possível visualizar detalhes de um pet para adoção
+[] Deve ser possível se cadastrar como uma ORG
+[] Deve ser possível realizar login como uma ORG
+
+RNs (Regras de Negocio)
+
+[] Para listar os pets, obrigatoriamente precisamos informar a cidade
+[] Uma ORG precisa ter um endereço e um número de WhatsApp
+[] Um pet deve estar ligado a uma ORG
+[] O usuário que quer adotar, entrará em contato com a ORG via WhatsApp
+[] Todos os filtros, além da cidade, são opcionais
+[] Para uma ORG acessar a aplicação como admin, ela precisa estar logada
+
+
+RNFs (Requisitos não funcionais)
+
+[] A senha da ORG precisa estar criptografada
+[] Os dados da aplicação precisam estar persistidos em um banco PostgreSQL;
+[]
+
+
+
+
+1 app.ts tem uma funcionalidade(plugin) que chama o arquivo de rotas
+2 dentro da rota informa o metodo, rota e o alias
+3 dentro da função é vai para a pasta controllers, esta pasta lida com as requisições http, ela pega no body as
+informações que o usuario passou
+4 as informações vão para a pasta use-cases onde fica a logica da aplicação > register.ts
+5 antes de cadastrar no DB as informações passam por um interceptador que fica na pasta repositories e de la sao
+cadastradas
+
+
+
+
+
+
+
+
+model Pet {
+  id         String   @id @default(uuid())
+  type       String
+  breed      String
+  name       String
+  age        String
+  size       String
+  color      String
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+
+  ORGs ORG[]
+
+  @@map("pets")
+}
+
+model ORG {
+  id            String @id @default(uuid())
+  name          String
+  description   String
+  address       String
+  whatsapp      String
+  email         String @unique
+  password_hash String
+
+  pet    Pet    @relation(fields: [pet_id], references: [id])
+  pet_id String
+
+  city    City   @relation(fields: [city_id], references: [id])
+  city_id String
+
+  @@map("orgs")
+}
+
+model City {
+  id          String @id @default(uuid())
+  name        String
+  description String
+
+  ORGs ORG[]
+
+  @@map("cities")
+}
