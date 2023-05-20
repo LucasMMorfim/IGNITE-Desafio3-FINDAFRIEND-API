@@ -1,6 +1,7 @@
 import { OrgRepository } from "@/repositories/org-repository"
 import { hash } from "bcryptjs"
 import { OrgAlreadyExistsError } from "./errors/org-already-exists-error"
+import { PetsRepository } from "@/repositories/pets-repository"
 
 
 interface RegisterOrgUseCaseRequest {
@@ -14,7 +15,7 @@ interface RegisterOrgUseCaseRequest {
 
 export class RegisterOrgUseCase {
 
-  constructor(private orgsRepository: OrgRepository) {}
+  constructor(private orgsRepository: OrgRepository, petsRepository: PetsRepository) {}
 
   async execute({ name, description, address, whatsapp, email, password }: RegisterOrgUseCaseRequest) {
     const password_hash = await hash(password, 6)
@@ -25,6 +26,7 @@ export class RegisterOrgUseCase {
       throw new OrgAlreadyExistsError()
     }
 
+
     await this.orgsRepository.create({
       name,
       description,
@@ -32,16 +34,7 @@ export class RegisterOrgUseCase {
       whatsapp,
       email,
       password_hash,
-      pet: {
-        create: {
-          name: 'name-01',
-          breed : 'breed-01',
-          color: 'color-01',
-          size: 'size-01',
-          age: 'age-01',
-          type: 'type-01',
-        }
-      },
+      pet,
       city: {
         create:{
           name: 'city-01',
