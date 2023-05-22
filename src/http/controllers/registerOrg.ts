@@ -3,6 +3,7 @@ import { z } from "zod"
 import { RegisterOrgUseCase } from "@/use-cases/registerOrg"
 import { PrismaOrgsRepository } from "@/repositories/prisma/prisma-orgs-repository"
 import { OrgAlreadyExistsError } from "@/use-cases/errors/org-already-exists-error"
+import { PrismaCityRepository } from "@/repositories/prisma/prisma-city-repository"
 
 export async function registerOrgs(request: FastifyRequest, reply: FastifyReply) {
   const registerOrgSchema = z.object({
@@ -11,14 +12,18 @@ export async function registerOrgs(request: FastifyRequest, reply: FastifyReply)
     address: z.string(),
     whatsapp: z.string(),
     email: z.string().email(),
-    password: z.string().min(6)
+    password: z.string().min(6),
+    city: z.object({
+      name: z.string()
+    })
   })
 
-  const { name, description, address, whatsapp, email, password } = registerOrgSchema.parse(request.body)
+  const { name, description, address, whatsapp, email, password, city } = registerOrgSchema.parse(request.body)
 
   try {
     const orgsRepository = new PrismaOrgsRepository()
-    const registerOrgsUseCase = new RegisterOrgUseCase(orgsRepository)
+    const cityRepository = new PrismaCityRepository()
+    const registerOrgsUseCase = new RegisterOrgUseCase(orgsRepository, cityRepository)
 
 
     await registerOrgsUseCase.execute({
@@ -28,6 +33,7 @@ export async function registerOrgs(request: FastifyRequest, reply: FastifyReply)
       whatsapp,
       email,
       password,
+      city,
     })
 
   } catch (err) {

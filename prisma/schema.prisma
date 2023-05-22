@@ -21,12 +21,12 @@ model Pet {
   created_at DateTime @default(now())
   updated_at DateTime @default(now())
 
-  ORGs ORG[]
+  ORGs Org[]
 
   @@map("pets")
 }
 
-model ORG {
+model Org {
   id            String @id @default(uuid())
   name          String
   description   String
@@ -35,8 +35,7 @@ model ORG {
   email         String @unique
   password_hash String
 
-  pet    Pet?    @relation(fields: [pet_id], references: [id])
-  pet_id String?
+  pet Pet[]
 
   city    City   @relation(fields: [city_id], references: [id])
   city_id String
@@ -45,11 +44,10 @@ model ORG {
 }
 
 model City {
-  id          String @id @default(uuid())
-  name        String
-  description String
+  id   String @id @default(uuid())
+  name String
 
-  ORGs ORG[]
+  ORGs Org[]
 
   @@map("cities")
 }

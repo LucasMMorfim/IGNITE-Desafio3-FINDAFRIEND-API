@@ -2,7 +2,6 @@ import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { OrgRepository } from "../org-repository";
 
-
 export class PrismaOrgsRepository implements OrgRepository{
   async findByEmail(email: string) {
     const org = await prisma.org.findUnique({
@@ -14,7 +13,7 @@ export class PrismaOrgsRepository implements OrgRepository{
     return org
   }
 
-  async create(data: Prisma.ORGCreateInput) {
+  async create(data: Prisma.OrgCreateInput) {
     const org = await prisma.org.create({
       data,
     })
