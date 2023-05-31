@@ -1,8 +1,7 @@
-import { OrgRepository } from "@/repositories/org-repository"
-import { hash } from "bcryptjs"
-import { OrgAlreadyExistsError } from "./errors/org-already-exists-error"
-import { CityRepository } from "@/repositories/city-repository"
-
+import { OrgRepository } from '@/repositories/orgs-repository'
+import { hash } from 'bcryptjs'
+import { OrgAlreadyExistsError } from './errors/org-already-exists-error'
+import { CityRepository } from '@/repositories/city-repository'
 
 interface CityData {
   name: string
@@ -19,39 +18,52 @@ interface RegisterOrgUseCaseRequest {
 }
 
 export class RegisterOrgUseCase {
-
   constructor(
-    private orgsRepository: OrgRepository, 
+    private orgsRepository: OrgRepository,
     private cityRepositories: CityRepository
   ) {}
 
-  async execute({ name, description, address, whatsapp, email, password, city }: RegisterOrgUseCaseRequest) {
+  async execute({
+    name,
+    description,
+    address,
+    whatsapp,
+    email,
+    password,
+    city
+  }: RegisterOrgUseCaseRequest) {
     const password_hash = await hash(password, 6)
 
-    const orgWithSameEmail = await this.orgsRepository.findByEmail(email)
+    const orgWithSameEmail = await this.orgsRepository.findByEmail(email) //WARNING
 
     if (orgWithSameEmail) {
+      throw new OrgAlreadyExistsError()
+    }
+
+    const orgWithSameName = await this.orgsRepository.findByName(name)
+    if (orgWithSameName) {
       throw new OrgAlreadyExistsError()
     }
 
     const data = await this.cityRepositories.findByName(city.name)
 
     await this.orgsRepository.create({
-        name,
-        description,
-        address,
-        whatsapp,
-        email,
-        password_hash,
-        pet: {},
-        city: {
-          ...data ? {
-            connect: {
-              id: data.id,
+      name,
+      description,
+      address,
+      whatsapp,
+      email,
+      password_hash,
+      pet: {},
+      city: {
+        ...(data
+          ? {
+              connect: {
+                id: data.id
+              }
             }
-          } : { create: { name: city.name }}
-        },
-      },
-    )
+          : { create: { name: city.name } })
+      }
+    })
   }
 }

@@ -1,5 +1,6 @@
-import { OrgRepository } from "@/repositories/org-repository"
-import { PetsRepository } from "@/repositories/pets-repository"
+import { OrgRepository } from '@/repositories/orgs-repository'
+import { PetsRepository } from '@/repositories/pets-repository'
+import { OrgDontExistsError } from './errors/org-dont-exists-error'
 
 interface OrgData {
   name: string
@@ -12,28 +13,42 @@ interface registerPetUseCaseRequest {
   age: string
   size: string
   color: string
-  ORGs: OrgData
+  org: OrgData
 }
 
 export class RegisterPetUseCase {
   constructor(
     private petsRepository: PetsRepository,
     private orgsRepository: OrgRepository
-    ) {}
+  ) {}
 
-    
-    async execute({ type, breed, name, age, size, color, ORGs }: registerPetUseCaseRequest) {
-      
-    const data = await this.orgsRepository.findByName(ORGs.name)
-  
+  async execute({
+    type,
+    breed,
+    name,
+    age,
+    size,
+    color,
+    org
+  }: registerPetUseCaseRequest) {
+    const data = await this.orgsRepository.findByName(org.name)
+
+    if (!data) {
+      throw new OrgDontExistsError()
+    }
+
     await this.petsRepository.create({
       type,
-      breed, 
-      name, 
-      age, 
-      size, 
+      breed,
+      name,
+      age,
+      size,
       color,
-      ORGs: ORGs.name
+      ORGs: {
+        connect: {
+          id: data.id
+        }
+      }
     })
   }
 }
